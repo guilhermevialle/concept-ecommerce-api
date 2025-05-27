@@ -1,0 +1,71 @@
+import { Event } from '@/interfaces/domain/event'
+import { z } from 'zod'
+import { IDService } from '../services/id-service.service'
+
+const partialCustomerPropsSchema = z.object({
+  id: z.string().optional(),
+  createdAt: z.date().optional()
+})
+
+const requiredCustomerPropsSchema = z.object({
+  username: z
+    .string({
+      required_error: 'Username is required.',
+      invalid_type_error: 'Username must be a string.'
+    })
+    .min(3, 'Username must be at least 3 characters.')
+    .max(64, 'Username must be at most 64 characters.')
+})
+
+type RequiredCustomerProps = z.infer<typeof requiredCustomerPropsSchema>
+
+const customerPropsSchema = partialCustomerPropsSchema.merge(
+  requiredCustomerPropsSchema
+)
+
+type CustomerProps = z.infer<typeof customerPropsSchema>
+
+export class Customer {
+  private props: CustomerProps
+  private events: Event[] = []
+
+  private constructor(props: CustomerProps) {
+    this.props = {
+      ...props,
+      id: props.id ?? IDService.generate(),
+      createdAt: props.createdAt ?? new Date()
+    }
+
+    this.validate()
+  }
+
+  private validate() {
+    customerPropsSchema.parse(this.props)
+  }
+
+  static create(props: RequiredCustomerProps) {
+    return new Customer({ ...props })
+  }
+
+  static restore(props: Required<CustomerProps>) {
+    const parsed = customerPropsSchema.required().parse(props)
+    return new Customer(parsed)
+  }
+
+  public toJSON() {
+    return this.props
+  }
+
+  // Getters
+  get id() {
+    return this.props.id!
+  }
+
+  get username() {
+    return this.props.username
+  }
+
+  get createdAt() {
+    return this.props.createdAt!
+  }
+}

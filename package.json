@@ -1,0 +1,24 @@
+{
+  "name": "concept-ecommerce-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsnd --respawn --quiet --clear --transpile-only --require tsconfig-paths/register src/server.ts",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "nanoid": "^3.3.11",
+    "prettier": "^3.5.3",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4",
+    "zod": "^3.25.31"
+  },
+  "devDependencies": {
+    "tsconfig-paths": "^4.2.0"
+  }
+}
