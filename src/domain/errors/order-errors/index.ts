@@ -18,3 +18,9 @@ export class InvalidOrderStatusError extends OrderError {
     super(message ?? 'Invalid order status.')
   }
 }
+
+export class ProcessingOrderError extends OrderError {
+  constructor(message?: string) {
+    super(message ?? 'Processing order error.')
+  }
+}

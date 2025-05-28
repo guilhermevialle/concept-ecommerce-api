@@ -3,7 +3,11 @@ import { z } from 'zod'
 import { IDService } from '../services/id-service.service'
 
 const partialOrderItemPropsSchema = z.object({
-  id: z.string().optional()
+  id: z
+    .string({
+      invalid_type_error: 'id must be a string.'
+    })
+    .optional()
 })
 
 type PartialOrderItemProps = z.infer<typeof partialOrderItemPropsSchema>

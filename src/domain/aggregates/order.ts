@@ -3,13 +3,30 @@ import { OrderStatus } from '@/types/order'
 import { wait } from '@/utils/wait'
 import { z } from 'zod'
 import { OrderItem } from '../entities/order-item'
+import { ProcessingOrderError } from '../errors/order-errors'
 import { IDService } from '../services/id-service.service'
 
 const partialOrderPropsSchema = z.object({
-  id: z.string().optional(),
-  status: z.string().optional(),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  id: z
+    .string({
+      invalid_type_error: 'ID must be a string.'
+    })
+    .optional(),
+  status: z
+    .string({
+      invalid_type_error: 'Status must be a string.'
+    })
+    .optional(),
+  createdAt: z
+    .date({
+      invalid_type_error: 'Created at must be a date.'
+    })
+    .optional(),
+  updatedAt: z
+    .date({
+      invalid_type_error: 'Updated at must be a date.'
+    })
+    .optional(),
   totalAmountInCents: z
     .number({
       invalid_type_error: 'Total amount must be a number.',
@@ -87,6 +104,9 @@ export class Order {
   }
 
   public async process() {
+    if (this.itemsSet.size === 0)
+      throw new ProcessingOrderError('Order has no items.')
+
     this.updateStatus('PROCESSING')
 
     this.events.push({

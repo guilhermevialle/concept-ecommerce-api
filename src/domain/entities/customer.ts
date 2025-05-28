@@ -3,8 +3,16 @@ import { z } from 'zod'
 import { IDService } from '../services/id-service.service'
 
 const partialCustomerPropsSchema = z.object({
-  id: z.string().optional(),
-  createdAt: z.date().optional()
+  id: z
+    .string({
+      invalid_type_error: 'ID must be a string.'
+    })
+    .optional(),
+  createdAt: z
+    .date({
+      invalid_type_error: 'Created at must be a date.'
+    })
+    .optional()
 })
 
 const requiredCustomerPropsSchema = z.object({
