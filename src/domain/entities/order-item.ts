@@ -38,7 +38,7 @@ const requiredOrderPropsSchema = z.object({
     .min(100, 'Unit price must be at least $1.')
 })
 
-type RequiredOrderItemProps = z.infer<typeof requiredOrderPropsSchema>
+export type RequiredOrderItemProps = z.infer<typeof requiredOrderPropsSchema>
 
 export const orderItemPropsSchema = partialOrderItemPropsSchema.merge(
   requiredOrderPropsSchema

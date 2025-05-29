@@ -2,7 +2,7 @@ import { Event } from '@/interfaces/domain/event'
 import { OrderStatus } from '@/types/order'
 import { z } from 'zod'
 import { OrderItem } from '../entities/order-item'
-import { PayingOrderError, ProcessingOrderError } from '../errors/order-errors'
+import { ProcessingOrderError } from '../errors/order-errors'
 import { IDService } from '../services/id-service.service'
 
 const partialOrderPropsSchema = z.object({
@@ -36,6 +36,11 @@ const partialOrderPropsSchema = z.object({
 })
 
 const requiredOrderPropsSchema = z.object({
+  id: z
+    .string({
+      invalid_type_error: 'ID must be a string.'
+    })
+    .optional(),
   customerId: z
     .string({
       required_error: 'Customer ID is required.',
@@ -43,22 +48,26 @@ const requiredOrderPropsSchema = z.object({
     })
     .min(1, 'Customer ID cannot be empty.'),
 
-  items: z.array(z.instanceof(OrderItem), {
-    required_error: 'Order items are required.',
-    invalid_type_error: 'Items must be an array of OrderItem.'
-  })
+  items: z
+    .array(z.instanceof(OrderItem), {
+      required_error: 'Order items are required.',
+      invalid_type_error: 'Items must be an array of OrderItem.'
+    })
+    .nonempty('Order items cannot be empty.')
 })
 
-type RequiredOrderProps = z.infer<typeof requiredOrderPropsSchema>
+export type RequiredOrderProps = z.infer<typeof requiredOrderPropsSchema>
 
-const orderPropsSchema = partialOrderPropsSchema.merge(requiredOrderPropsSchema)
+export const orderPropsSchema = partialOrderPropsSchema.merge(
+  requiredOrderPropsSchema
+)
 
 type OrderProps = z.infer<typeof orderPropsSchema>
 
 export class Order {
   private props: OrderProps
-  private itemsSet: Set<OrderItem>
   private events: Event[] = []
+  private itemsSet: Set<OrderItem>
 
   private constructor(props: OrderProps) {
     this.props = {
@@ -69,9 +78,7 @@ export class Order {
       updatedAt: props.updatedAt ?? new Date(),
       totalAmountInCents:
         props.totalAmountInCents ??
-        (props.items.length > 0
-          ? props.items.reduce((acc, item) => acc + item.getTotalAmount(), 0)
-          : 0)
+        props.items.reduce((acc, item) => acc + item.getTotalAmount(), 0)
     }
 
     this.itemsSet = new Set(this.props.items)
@@ -107,8 +114,7 @@ export class Order {
   }
 
   private updateStatus(status: OrderStatus) {
-    if (!status || typeof status !== 'string' || status.trim().length === 0)
-      throw new Error('Invalid order status.')
+    orderPropsSchema.shape.status.parse(status)
 
     this.props.status = status
     this.touch()
@@ -143,8 +149,6 @@ export class Order {
   }
 
   public async pay() {
-    if (this.isOrderEmpty()) throw new PayingOrderError('Order has no items.')
-
     this.updateStatus('PAID')
 
     this.events.push({
@@ -180,62 +184,6 @@ export class Order {
       payload: {
         orderId: this.id,
         action: 'process finished'
-      }
-    })
-  }
-
-  public removeItem(item: OrderItem) {
-    if (this.isOrderEmpty()) return
-    if (!this.itemsSet.has(item)) return
-
-    this.itemsSet.delete(item)
-    this.recalculateTotalAmount()
-    this.touch()
-
-    this.events.push({
-      name: 'order.item.removed',
-      occurredAt: new Date(),
-      payload: {
-        orderId: this.id,
-        item: item.toJSON()
-      }
-    })
-  }
-
-  public addItem(item: OrderItem) {
-    const existingItem = [...this.itemsSet].find(
-      (existing) =>
-        existing.productId === item.productId &&
-        existing.orderId === item.orderId
-    )
-
-    if (existingItem) {
-      existingItem.incrementQuantity(item.quantity)
-      this.recalculateTotalAmount()
-      this.touch()
-
-      this.events.push({
-        name: 'order.item.incremented',
-        occurredAt: new Date(),
-        payload: {
-          orderId: this.id,
-          item: item.toJSON()
-        }
-      })
-
-      return
-    }
-
-    this.itemsSet.add(item)
-    this.recalculateTotalAmount()
-    this.touch()
-
-    this.events.push({
-      name: 'order.item.added',
-      occurredAt: new Date(),
-      payload: {
-        orderId: this.id,
-        item: item.toJSON()
       }
     })
   }

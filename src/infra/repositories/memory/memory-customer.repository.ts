@@ -8,6 +8,13 @@ export class MemoryCustomerRepository implements ICustomerRepository {
     this.storage.push(customer)
   }
 
+  async findByUsername(username: string): Promise<Customer | null> {
+    const customer = this.storage.find(
+      (customer) => customer.username === username
+    )
+    return customer ?? null
+  }
+
   async findById(id: string): Promise<Customer | null> {
     const customer = this.storage.find((customer) => customer.id === id)
     return customer ?? null

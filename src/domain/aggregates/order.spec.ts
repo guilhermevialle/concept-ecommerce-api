@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { OrderItem } from '../entities/order-item'
-import { Order } from './order'
+import { Order, RequiredOrderProps } from './order'
 
 const orderItem = OrderItem.create({
   orderId: '1',
@@ -9,7 +9,7 @@ const orderItem = OrderItem.create({
   unitPriceInCents: 100
 })
 
-const props = {
+const props: RequiredOrderProps = {
   customerId: '1',
   items: [orderItem]
 }
@@ -18,7 +18,9 @@ describe('Order Entity', () => {
   let order: Order
 
   beforeEach(() => {
-    order = Order.create({ ...props })
+    order = Order.create({
+      ...props
+    })
   })
 
   it('should be able to create an order', () => {
@@ -50,24 +52,5 @@ describe('Order Entity', () => {
   it('it should simulate order processing', async () => {
     await order.process()
     expect(order.status).toBe('PROCESSING')
-  })
-
-  it('should add an item to the order', () => {
-    const orderItem2 = OrderItem.create({
-      ...orderItem.toJSON(),
-      productId: '2'
-    })
-
-    order.addItem(orderItem2)
-    expect(order.items).toHaveLength(2)
-    expect(order.totalAmountInCents).toBe(200)
-    expect(order.items).toStrictEqual([orderItem, orderItem2])
-  })
-
-  it('should remove an item from the order', () => {
-    order.removeItem(orderItem)
-    expect(order.items).toHaveLength(0)
-    expect(order.totalAmountInCents).toBe(0)
-    expect(order.items).toStrictEqual([])
   })
 })
