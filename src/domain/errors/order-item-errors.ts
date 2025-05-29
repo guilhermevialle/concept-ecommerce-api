@@ -1,4 +1,4 @@
-import { DomainError } from '../domain-error'
+import { DomainError } from './domain-error'
 
 export abstract class OrderItemError extends DomainError {
   constructor(message: string) {

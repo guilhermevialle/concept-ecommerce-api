@@ -1,4 +1,4 @@
-import { ApplicationError } from '../application-error'
+import { ApplicationError } from './application-error'
 
 export class ProductNotFoundError extends ApplicationError {
   constructor(message?: string) {
