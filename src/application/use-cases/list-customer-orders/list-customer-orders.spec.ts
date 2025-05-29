@@ -40,7 +40,8 @@ describe('ListCustomerOrders Use Case', () => {
           orderId,
           productId: '1',
           quantity: 1,
-          unitPriceInCents: 100
+          unitPriceInCents: 100,
+          snapshotTitle: 'Product 1'
         })
       ]
     })

@@ -1,8 +1,6 @@
-import { Event } from '@/interfaces/domain/event'
 import { OrderStatus } from '@/types/order'
 import { z } from 'zod'
 import { OrderItem } from '../entities/order-item'
-import { ProcessingOrderError } from '../errors/order-errors'
 import { IDService } from '../services/id.service'
 
 const partialOrderPropsSchema = z.object({
@@ -66,7 +64,6 @@ type OrderProps = z.infer<typeof orderPropsSchema>
 
 export class Order {
   private props: OrderProps
-  private events: Event[] = []
   private itemsSet: Set<OrderItem>
 
   private constructor(props: OrderProps) {
@@ -118,25 +115,9 @@ export class Order {
 
     this.props.status = status
     this.touch()
-
-    this.events.push({
-      name: 'order.status.updated',
-      occurredAt: new Date(),
-      payload: {
-        orderId: this.id,
-        status
-      }
-    })
   }
 
-  // --- public methods ---
-
-  public pullEvents() {
-    const events = this.events
-    this.events = []
-    return events
-  }
-
+  // public methods
   public toJSON() {
     return {
       ...this.props,
@@ -144,52 +125,15 @@ export class Order {
     }
   }
 
-  public isOrderEmpty() {
-    return this.itemsSet.size === 0
-  }
-
   public async pay() {
     this.updateStatus('PAID')
-
-    this.events.push({
-      name: 'order.paid',
-      occurredAt: new Date(),
-      payload: {
-        orderId: this.id,
-        action: 'paid'
-      }
-    })
   }
 
   public async process() {
-    if (this.isOrderEmpty())
-      throw new ProcessingOrderError('Order has no items.')
-
     this.updateStatus('PROCESSING')
-
-    this.events.push({
-      name: 'order.processing.started',
-      occurredAt: new Date(),
-      payload: {
-        orderId: this.id,
-        action: 'processing'
-      }
-    })
-
-    // await wait(3000)
-
-    this.events.push({
-      name: 'order.processing.finished',
-      occurredAt: new Date(),
-      payload: {
-        orderId: this.id,
-        action: 'process finished'
-      }
-    })
   }
 
   // --- getters ---
-
   get id() {
     return this.props.id!
   }

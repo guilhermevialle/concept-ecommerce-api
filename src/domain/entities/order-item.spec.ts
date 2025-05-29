@@ -5,7 +5,8 @@ const props = {
   orderId: '1',
   productId: '1',
   quantity: 1,
-  unitPriceInCents: 100
+  unitPriceInCents: 100,
+  snapshotTitle: 'Product 1'
 }
 
 describe('OrderItem Entity', () => {

@@ -6,10 +6,9 @@ import {
 import { Order, orderPropsSchema } from '@/domain/aggregates/order'
 import { OrderItem } from '@/domain/entities/order-item'
 import { IDService } from '@/domain/services/id.service'
-import { ICustomerRepository } from '@/interfaces/infra/repositories/customer'
-import { IOrderRepository } from '@/interfaces/infra/repositories/order'
-import { IProductRepository } from '@/interfaces/infra/repositories/product'
-import { IMailService } from '@/interfaces/infra/services/mail'
+import { ICustomerRepository } from '@/interfaces/repositories/customer'
+import { IOrderRepository } from '@/interfaces/repositories/order'
+import { IProductRepository } from '@/interfaces/repositories/product'
 import { z } from 'zod'
 
 interface CreateOrderRequest {
@@ -28,8 +27,7 @@ export class CreateOrder {
   constructor(
     private readonly customerRepo: ICustomerRepository,
     private readonly productRepo: IProductRepository,
-    private readonly orderRepo: IOrderRepository,
-    private readonly mailService: IMailService
+    private readonly orderRepo: IOrderRepository
   ) {}
 
   async execute({
@@ -61,7 +59,8 @@ export class CreateOrder {
           orderId,
           productId: item.productId,
           quantity: item.quantity,
-          unitPriceInCents: product.priceInCents
+          unitPriceInCents: product.priceInCents,
+          snapshotTitle: product.title
         })
       )
     }
@@ -73,12 +72,6 @@ export class CreateOrder {
     })
 
     await this.orderRepo.save(order)
-
-    await this.mailService.send({
-      to: customer.email,
-      subject: 'Order created',
-      html: `<h1>Order created</h1>`
-    })
 
     return order
   }

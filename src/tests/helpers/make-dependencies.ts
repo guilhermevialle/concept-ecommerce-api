@@ -2,7 +2,7 @@ import { MemoryCustomerRepository } from '@/infra/repositories/memory/memory-cus
 import { MemoryOrderRepository } from '@/infra/repositories/memory/memory-order.repository'
 import { MemoryProductRepository } from '@/infra/repositories/memory/memory-product.repository'
 import { MailService } from '@/infra/services/mail.service'
-import { IMailService } from '@/interfaces/infra/services/mail'
+import { IMailService } from '@/interfaces/services/mail'
 
 export type IDependencies = {
   customerRepo: MemoryCustomerRepository

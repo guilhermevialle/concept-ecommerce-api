@@ -1,4 +1,4 @@
-import { ICustomerRepository } from '@/interfaces/infra/repositories/customer'
+import { ICustomerRepository } from '@/interfaces/repositories/customer'
 import { makeDependencies } from '@/tests/helpers/make-dependencies'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { CreateCustomer } from './create-customer'

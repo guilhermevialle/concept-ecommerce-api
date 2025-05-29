@@ -1,4 +1,4 @@
-import { toCents } from '@/utils/to-cents'
+import { toCents } from '@/shared/utils/to-cents'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { Product } from './product'
 

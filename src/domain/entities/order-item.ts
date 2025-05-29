@@ -1,4 +1,3 @@
-import { Event } from '@/interfaces/domain/event'
 import { z } from 'zod'
 import { IDService } from '../services/id.service'
 
@@ -9,8 +8,6 @@ const partialOrderItemPropsSchema = z.object({
     })
     .optional()
 })
-
-type PartialOrderItemProps = z.infer<typeof partialOrderItemPropsSchema>
 
 const requiredOrderPropsSchema = z.object({
   orderId: z
@@ -35,7 +32,14 @@ const requiredOrderPropsSchema = z.object({
       invalid_type_error: 'unitPriceInCents must be a number.',
       required_error: 'unitPriceInCents is required.'
     })
-    .min(100, 'Unit price must be at least $1.')
+    .min(100, 'Unit price must be at least $1.'),
+  snapshotTitle: z
+    .string({
+      required_error: 'name is required.',
+      invalid_type_error: 'name must be a string.'
+    })
+    .min(3, 'name must be at least 3 characters.')
+    .max(150, 'name must be at most 150 characters.')
 })
 
 export type RequiredOrderItemProps = z.infer<typeof requiredOrderPropsSchema>
@@ -48,7 +52,6 @@ type OrderItemProps = z.infer<typeof orderItemPropsSchema>
 
 export class OrderItem {
   private props: OrderItemProps
-  private events: Event[] = []
 
   constructor(props: OrderItemProps) {
     this.props = {
@@ -75,23 +78,8 @@ export class OrderItem {
   }
 
   // public methods
-  public pullEvents() {
-    const events = this.events
-    this.events = []
-    return events
-  }
-
   public incrementQuantity(amount: number) {
     this.props.quantity += amount
-
-    this.events.push({
-      name: 'order.item.incremented',
-      occurredAt: new Date(),
-      payload: {
-        orderId: this.id,
-        item: this.toJSON()
-      }
-    })
   }
 
   public getTotalAmount() {
@@ -121,5 +109,9 @@ export class OrderItem {
 
   get unitPriceInCents() {
     return this.props.unitPriceInCents
+  }
+
+  get snapshotTitle() {
+    return this.props.snapshotTitle
   }
 }

@@ -1,10 +1,10 @@
 import { Customer } from '@/domain/entities/customer'
 import { Product } from '@/domain/entities/product'
+import { toCents } from '@/shared/utils/to-cents'
 import {
   IDependencies,
   makeDependencies
 } from '@/tests/helpers/make-dependencies'
-import { toCents } from '@/utils/to-cents'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { CreateOrder } from './create-order'
 
@@ -25,7 +25,7 @@ describe('CreateOrder Use Case', () => {
       title: 'iPhone X',
       summary:
         'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      priceInCents: toCents(9999),
+      priceInCents: toCents(999.9),
       currency: 'USD',
       stockQuantity: 20
     })

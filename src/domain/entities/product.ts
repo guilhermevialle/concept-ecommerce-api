@@ -1,4 +1,3 @@
-import { Event } from '@/interfaces/domain/event'
 import { z } from 'zod'
 import { IDService } from '../services/id.service'
 
@@ -63,7 +62,6 @@ type ProductProps = z.infer<typeof productPropsSchema>
 
 export class Product {
   private props: ProductProps
-  private events: Event[] = []
 
   private constructor(props: any) {
     this.props = {
@@ -98,12 +96,6 @@ export class Product {
     this.props.updatedAt = new Date()
   }
 
-  public pullEvents() {
-    const events = this.events
-    this.events = []
-    return events
-  }
-
   public isAvailable() {
     return this.stockQuantity > 0
   }
@@ -113,15 +105,6 @@ export class Product {
 
     this.props.stockQuantity = stockQuantity
     this.touch()
-
-    this.events.push({
-      name: 'product.stock.updated',
-      occurredAt: new Date(),
-      payload: {
-        productId: this.id,
-        stockQuantity
-      }
-    })
   }
 
   public updatePrice(priceInCents: number) {
@@ -129,15 +112,6 @@ export class Product {
 
     this.props.priceInCents = priceInCents
     this.touch()
-
-    this.events.push({
-      name: 'product.price.updated',
-      occurredAt: new Date(),
-      payload: {
-        productId: this.id,
-        priceInCents
-      }
-    })
   }
 
   // getters

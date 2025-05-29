@@ -1,4 +1,3 @@
-import { Event } from '@/interfaces/domain/event'
 import { z } from 'zod'
 import { IDService } from '../services/id.service'
 
@@ -49,7 +48,6 @@ type CustomerProps = z.infer<typeof customerPropsSchema>
 
 export class Customer {
   private props: CustomerProps
-  private events: Event[] = []
 
   private constructor(props: CustomerProps) {
     this.props = {
