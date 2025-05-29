@@ -5,12 +5,14 @@ describe('Customer Entity', () => {
   it('should create valid customer with default values (id, createdAt)', () => {
     const customer = Customer.create({
       username: 'John Doe',
-      balanceInCents: 1000
+      balanceInCents: 1000,
+      email: 'fWlEo@example.com'
     })
 
     expect(customer.toJSON()).toStrictEqual({
       id: expect.any(String),
       username: 'John Doe',
+      email: 'fWlEo@example.com',
       balanceInCents: 1000,
       createdAt: expect.any(Date)
     })

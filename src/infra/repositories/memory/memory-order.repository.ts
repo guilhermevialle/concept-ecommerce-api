@@ -1,5 +1,5 @@
 import { Order } from '@/domain/aggregates/order'
-import { IOrderRepository } from '@/interfaces/repositories/order'
+import { IOrderRepository } from '@/interfaces/infra/repositories/order'
 
 export class MemoryOrderRepository implements IOrderRepository {
   private storage: Order[] = []

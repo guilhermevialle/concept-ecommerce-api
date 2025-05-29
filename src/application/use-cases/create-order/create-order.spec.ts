@@ -18,6 +18,7 @@ describe('CreateOrder Use Case', () => {
     dependencies = makeDependencies()
     customer = Customer.create({
       username: 'test',
+      email: 'm5oCt@example.com',
       balanceInCents: 0
     })
     product = Product.create({
@@ -31,7 +32,8 @@ describe('CreateOrder Use Case', () => {
     useCase = new CreateOrder(
       dependencies.customerRepo,
       dependencies.productRepo,
-      dependencies.orderRepo
+      dependencies.orderRepo,
+      dependencies.mailService
     )
   })
 

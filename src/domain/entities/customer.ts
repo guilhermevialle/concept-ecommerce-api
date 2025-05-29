@@ -23,6 +23,13 @@ const requiredCustomerPropsSchema = z.object({
     })
     .min(3, 'Username must be at least 3 characters.')
     .max(64, 'Username must be at most 64 characters.'),
+  email: z
+    .string({
+      required_error: 'Email is required.',
+      invalid_type_error: 'Email must be a string.'
+    })
+    .email('Email must be a valid email.')
+    .max(255, 'Email must be at most 255 characters.'),
   balanceInCents: z
     .number({
       required_error: 'Balance is required.',
@@ -78,6 +85,10 @@ export class Customer {
 
   get username() {
     return this.props.username
+  }
+
+  get email() {
+    return this.props.email
   }
 
   get balanceInCents() {

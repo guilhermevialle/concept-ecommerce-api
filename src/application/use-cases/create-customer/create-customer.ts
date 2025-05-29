@@ -1,8 +1,11 @@
 import { CustomerAlreadyExistsError } from '@/application/errors/customer-errors'
-import { Customer, RequiredCustomerProps } from '@/domain/entities/customer'
-import { ICustomerRepository } from '@/interfaces/repositories/customer'
+import { Customer } from '@/domain/entities/customer'
+import { ICustomerRepository } from '@/interfaces/infra/repositories/customer'
 
-type CreateCustomerRequest = RequiredCustomerProps & {}
+type CreateCustomerRequest = {
+  username: string
+  email: string
+}
 
 type CreateCustomerResponse = Customer
 
@@ -11,7 +14,7 @@ export class CreateCustomer {
 
   async execute({
     username,
-    balanceInCents
+    email
   }: CreateCustomerRequest): Promise<CreateCustomerResponse> {
     const customerExists = await this.customerRepo.findByUsername(username)
 
@@ -20,7 +23,18 @@ export class CreateCustomer {
         'Username already used by another customer.'
       )
 
-    const customer = Customer.create({ username, balanceInCents })
+    const emailExists = await this.customerRepo.findByEmail(email)
+
+    if (emailExists)
+      throw new CustomerAlreadyExistsError(
+        'Email already used by another customer.'
+      )
+
+    const customer = Customer.create({
+      username,
+      email,
+      balanceInCents: 0
+    })
 
     await this.customerRepo.save(customer)
 

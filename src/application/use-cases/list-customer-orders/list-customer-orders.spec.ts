@@ -17,6 +17,7 @@ describe('ListCustomerOrders Use Case', () => {
   beforeEach(() => {
     customer = Customer.create({
       username: 'test',
+      email: 'm5oCt@example.com',
       balanceInCents: 0
     })
     dependencies = makeDependencies()

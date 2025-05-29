@@ -1,5 +1,5 @@
 import { Customer } from '@/domain/entities/customer'
-import { ICustomerRepository } from '@/interfaces/repositories/customer'
+import { ICustomerRepository } from '@/interfaces/infra/repositories/customer'
 
 export class MemoryCustomerRepository implements ICustomerRepository {
   private storage: Customer[] = []
@@ -12,6 +12,11 @@ export class MemoryCustomerRepository implements ICustomerRepository {
     const customer = this.storage.find(
       (customer) => customer.username === username
     )
+    return customer ?? null
+  }
+
+  async findByEmail(email: string): Promise<Customer | null> {
+    const customer = this.storage.find((customer) => customer.email === email)
     return customer ?? null
   }
 
