@@ -1,6 +1,6 @@
 import { Event } from '@/interfaces/domain/event'
 import { z } from 'zod'
-import { IDService } from '../services/id-service.service'
+import { IDService } from '../services/id.service'
 
 const partialOrderItemPropsSchema = z.object({
   id: z

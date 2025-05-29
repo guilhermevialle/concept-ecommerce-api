@@ -5,19 +5,20 @@ import {
 } from '@/application/errors/product-errors'
 import { Order, orderPropsSchema } from '@/domain/aggregates/order'
 import { OrderItem } from '@/domain/entities/order-item'
-import { IDService } from '@/domain/services/id-service.service'
+import { IDService } from '@/domain/services/id.service'
 import { ICustomerRepository } from '@/interfaces/repositories/customer'
 import { IOrderRepository } from '@/interfaces/repositories/order'
 import { IProductRepository } from '@/interfaces/repositories/product'
 import { z } from 'zod'
 
-type CreateOrderRequest = {
+interface CreateOrderRequest {
   customerId: string
   items: {
     productId: string
     quantity: number
   }[]
 }
+
 type OrderItems = z.infer<typeof orderPropsSchema.shape.items>
 
 type CreateOrderResponse = Order

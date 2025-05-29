@@ -3,7 +3,7 @@ import { OrderStatus } from '@/types/order'
 import { z } from 'zod'
 import { OrderItem } from '../entities/order-item'
 import { ProcessingOrderError } from '../errors/order-errors'
-import { IDService } from '../services/id-service.service'
+import { IDService } from '../services/id.service'
 
 const partialOrderPropsSchema = z.object({
   id: z
