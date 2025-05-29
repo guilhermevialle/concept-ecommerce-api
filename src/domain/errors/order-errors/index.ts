@@ -24,3 +24,9 @@ export class ProcessingOrderError extends OrderError {
     super(message ?? 'Processing order error.')
   }
 }
+
+export class PayingOrderError extends OrderError {
+  constructor(message?: string) {
+    super(message ?? 'Paying order error.')
+  }
+}

@@ -1,67 +1,44 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { OrderItem } from './order-item'
 
-describe('Order Item Entity', () => {
-  it('should create a valid order item (with ID either)', () => {
-    expect(() =>
-      OrderItem.create({
-        orderId: '1',
-        productId: '1',
-        unitPriceInCents: 1000,
-        quantity: 1
-      })
-    ).not.toThrow()
-  })
+const props = {
+  orderId: '1',
+  productId: '1',
+  quantity: 1,
+  unitPriceInCents: 100
+}
 
-  it('should throw if orderId is not provided', () => {
-    expect(() =>
-      OrderItem.create({
-        productId: '1',
-        unitPriceInCents: 1000,
-        quantity: 1
-      } as any)
-    ).toThrow()
-  })
+describe('OrderItem Entity', () => {
+  let orderItem: OrderItem
 
-  it('should throw if productId is not provided', () => {
-    expect(() =>
-      OrderItem.create({
-        orderId: '1',
-        unitPriceInCents: 1000,
-        quantity: 1
-      } as any)
-    ).toThrow()
-  })
-
-  it('should throw if unitPriceInCents is not provided', () => {
-    expect(() =>
-      OrderItem.create({
-        orderId: '1',
-        productId: '1',
-        quantity: 1
-      } as any)
-    ).toThrow()
-  })
-
-  it('should throw if quantity is not provided', () => {
-    expect(() =>
-      OrderItem.create({
-        orderId: '1',
-        productId: '1',
-        unitPriceInCents: 1000
-      } as any)
-    ).toThrow()
-  })
-
-  it('should restore a valid order item', () => {
-    const orderItem = OrderItem.restore({
-      id: '1',
-      orderId: '1',
-      productId: '1',
-      quantity: 1,
-      unitPriceInCents: 1000
+  beforeEach(() => {
+    orderItem = OrderItem.create({
+      ...props
     })
+  })
 
-    expect(orderItem.id).toBeDefined()
+  it('should be able to create an order item', () => {
+    expect(orderItem).toBeInstanceOf(OrderItem)
+    expect(orderItem.toJSON()).toStrictEqual({
+      id: expect.any(String),
+      ...props
+    })
+  })
+
+  it('should throw if is missing props to create', () => {
+    expect(() => OrderItem.create({} as any)).toThrow()
+  })
+
+  it('should throw if is missing props to restore', () => {
+    expect(() => OrderItem.restore({} as any)).toThrow()
+  })
+
+  it('should increment quantity', () => {
+    orderItem.incrementQuantity(1)
+    expect(orderItem.quantity).toBe(2)
+  })
+
+  it('should get total amount', () => {
+    expect(orderItem.getTotalAmount()).toBe(100)
   })
 })

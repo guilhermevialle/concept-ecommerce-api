@@ -22,10 +22,17 @@ const requiredCustomerPropsSchema = z.object({
       invalid_type_error: 'Username must be a string.'
     })
     .min(3, 'Username must be at least 3 characters.')
-    .max(64, 'Username must be at most 64 characters.')
+    .max(64, 'Username must be at most 64 characters.'),
+  balanceInCents: z
+    .number({
+      required_error: 'Balance is required.',
+      invalid_type_error: 'Balance must be a number.'
+    })
+    .min(0, 'Balance must be at least $0.')
+    .max(100_000_000, 'Balance must be at most $100,000,000.')
 })
 
-type RequiredCustomerProps = z.infer<typeof requiredCustomerPropsSchema>
+export type RequiredCustomerProps = z.infer<typeof requiredCustomerPropsSchema>
 
 const customerPropsSchema = partialCustomerPropsSchema.merge(
   requiredCustomerPropsSchema
@@ -71,6 +78,10 @@ export class Customer {
 
   get username() {
     return this.props.username
+  }
+
+  get balanceInCents() {
+    return this.props.balanceInCents
   }
 
   get createdAt() {

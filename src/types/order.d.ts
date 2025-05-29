@@ -4,6 +4,9 @@ export type OrderStatus =
   | 'SHIPPED'
   | 'DELIVERED'
   | 'CANCELLED'
+  | 'FINISHED'
+  | 'EXPIRED'
+  | 'PAID'
 
 export const ORDER_STATUS: OrderStatus[] = [
   'PENDING',

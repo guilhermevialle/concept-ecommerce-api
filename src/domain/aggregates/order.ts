@@ -1,9 +1,8 @@
 import { Event } from '@/interfaces/domain/event'
 import { OrderStatus } from '@/types/order'
-import { wait } from '@/utils/wait'
 import { z } from 'zod'
 import { OrderItem } from '../entities/order-item'
-import { ProcessingOrderError } from '../errors/order-errors'
+import { PayingOrderError, ProcessingOrderError } from '../errors/order-errors'
 import { IDService } from '../services/id-service.service'
 
 const partialOrderPropsSchema = z.object({
@@ -79,9 +78,7 @@ export class Order {
     this.validate()
   }
 
-  private validate() {
-    orderPropsSchema.parse(this.props)
-  }
+  // --- static methods ---
 
   static create(props: RequiredOrderProps) {
     return new Order({ ...props })
@@ -92,10 +89,41 @@ export class Order {
     return new Order(parsed)
   }
 
-  // domain methods
-  public touch() {
+  // --- private methods ---
+
+  private validate() {
+    orderPropsSchema.parse(this.props)
+  }
+
+  private touch() {
     this.props.updatedAt = new Date()
   }
+
+  private recalculateTotalAmount() {
+    this.props.totalAmountInCents = [...this.itemsSet].reduce(
+      (acc, item) => acc + item.getTotalAmount(),
+      0
+    )
+  }
+
+  private updateStatus(status: OrderStatus) {
+    if (!status || typeof status !== 'string' || status.trim().length === 0)
+      throw new Error('Invalid order status.')
+
+    this.props.status = status
+    this.touch()
+
+    this.events.push({
+      name: 'order.status.updated',
+      occurredAt: new Date(),
+      payload: {
+        orderId: this.id,
+        status
+      }
+    })
+  }
+
+  // --- public methods ---
 
   public pullEvents() {
     const events = this.events
@@ -103,8 +131,34 @@ export class Order {
     return events
   }
 
+  public toJSON() {
+    return {
+      ...this.props,
+      items: [...this.itemsSet]
+    }
+  }
+
+  public isOrderEmpty() {
+    return this.itemsSet.size === 0
+  }
+
+  public async pay() {
+    if (this.isOrderEmpty()) throw new PayingOrderError('Order has no items.')
+
+    this.updateStatus('PAID')
+
+    this.events.push({
+      name: 'order.paid',
+      occurredAt: new Date(),
+      payload: {
+        orderId: this.id,
+        action: 'paid'
+      }
+    })
+  }
+
   public async process() {
-    if (this.itemsSet.size === 0)
+    if (this.isOrderEmpty())
       throw new ProcessingOrderError('Order has no items.')
 
     this.updateStatus('PROCESSING')
@@ -118,7 +172,7 @@ export class Order {
       }
     })
 
-    await wait(3000)
+    // await wait(3000)
 
     this.events.push({
       name: 'order.processing.finished',
@@ -126,6 +180,24 @@ export class Order {
       payload: {
         orderId: this.id,
         action: 'process finished'
+      }
+    })
+  }
+
+  public removeItem(item: OrderItem) {
+    if (this.isOrderEmpty()) return
+    if (!this.itemsSet.has(item)) return
+
+    this.itemsSet.delete(item)
+    this.recalculateTotalAmount()
+    this.touch()
+
+    this.events.push({
+      name: 'order.item.removed',
+      occurredAt: new Date(),
+      payload: {
+        orderId: this.id,
+        item: item.toJSON()
       }
     })
   }
@@ -168,38 +240,8 @@ export class Order {
     })
   }
 
-  private recalculateTotalAmount() {
-    this.props.totalAmountInCents = [...this.itemsSet].reduce(
-      (acc, item) => acc + item.getTotalAmount(),
-      0
-    )
-  }
+  // --- getters ---
 
-  private updateStatus(status: OrderStatus) {
-    if (!status || typeof status !== 'string' || status.trim().length === 0)
-      throw new Error('Invalid order status.')
-
-    this.props.status = status
-    this.touch()
-
-    this.events.push({
-      name: 'order.status.updated',
-      occurredAt: new Date(),
-      payload: {
-        orderId: this.id,
-        status
-      }
-    })
-  }
-
-  public toJSON() {
-    return {
-      ...this.props,
-      items: [...this.itemsSet]
-    }
-  }
-
-  // Getters
   get id() {
     return this.props.id!
   }

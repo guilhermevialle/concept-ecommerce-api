@@ -50,6 +50,7 @@ async function app() {
     customerId: customer.id,
     items: []
   })
+
   console.log('🛒 Order created:')
   ;[iphoneX, samsungS8].forEach((product) => {
     order.addItem(

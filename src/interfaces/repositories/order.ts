@@ -2,6 +2,8 @@ import { Order } from '@/domain/aggregates/order'
 
 export interface IOrderRepository {
   save: (order: Order) => Promise<void>
-  find: (id: string) => Promise<Order | null>
+  findById: (id: string) => Promise<Order | null>
+  findManyByCustomerId: (id: string) => Promise<Order[]>
   update: (order: Order) => Promise<void>
+  clear: () => void
 }

@@ -27,11 +27,14 @@ const requiredProductPropsSchema = z.object({
       invalid_type_error: 'name must be a string.'
     })
     .min(3, 'name must be at least 3 characters.')
-    .max(255, 'name must be at most 255 characters.'),
-  summary: z.string({
-    required_error: 'summary is required.',
-    invalid_type_error: 'summary must be a string.'
-  }),
+    .max(150, 'name must be at most 150 characters.'),
+  summary: z
+    .string({
+      required_error: 'summary is required.',
+      invalid_type_error: 'summary must be a string.'
+    })
+    .min(8, 'summary must be at least 3 characters.')
+    .max(200, 'summary must be at most 1000 characters.'),
   priceInCents: z
     .number({
       required_error: 'priceInCents is required.',
