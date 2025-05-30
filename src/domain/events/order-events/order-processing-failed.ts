@@ -1,9 +1,9 @@
 import { DomainEvent, DomainEventProps } from '../domain-event'
 
-export interface OrderCreatedPayload {
+export interface OrderFailedPayload {
   customer: {
-    id: string
     email: string
+    username: string
   }
   order: {
     id: string
@@ -16,12 +16,12 @@ export interface OrderCreatedPayload {
   }
 }
 
-export class OrderCreatedEvent extends DomainEvent<OrderCreatedPayload> {
+export class OrderFailedEvent extends DomainEvent<OrderFailedPayload> {
   type(): string {
     return 'order.created.event'
   }
 
-  constructor(props: DomainEventProps<OrderCreatedPayload>) {
+  constructor(props: DomainEventProps<OrderFailedPayload>) {
     super(props)
   }
 }
