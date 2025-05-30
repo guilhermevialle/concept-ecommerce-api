@@ -1,9 +1,9 @@
-import { EventBus } from '@/infra/events/rabbitmq/rabbitmq-pub-sub'
+import { RabbitMQPubSub } from '@/infra/events/rabbitmq/rabbitmq-pub-sub'
 import { MemoryCustomerRepository } from '@/infra/repositories/memory/memory-customer.repository'
 import { MemoryOrderRepository } from '@/infra/repositories/memory/memory-order.repository'
 import { MemoryProductRepository } from '@/infra/repositories/memory/memory-product.repository'
 import { MailService } from '@/infra/services/mail.service'
-import { IEventBus } from '@/interfaces/infra/events/pub-sub'
+import { IPubSub } from '@/interfaces/infra/events/pub-sub'
 import { IMailService } from '@/interfaces/services/mail'
 
 export type IDependencies = {
@@ -11,7 +11,7 @@ export type IDependencies = {
   orderRepo: MemoryOrderRepository
   productRepo: MemoryProductRepository
   mailService: IMailService
-  eventBus: IEventBus
+  pubsub: IPubSub
 }
 
 export const makeDependencies = (): IDependencies => {
@@ -19,7 +19,7 @@ export const makeDependencies = (): IDependencies => {
   const orderRepo = new MemoryOrderRepository()
   const productRepo = new MemoryProductRepository()
   const mailService = new MailService()
-  const eventBus = EventBus.getInstance()
+  const pubsub = new RabbitMQPubSub()
 
-  return { customerRepo, orderRepo, productRepo, mailService, eventBus }
+  return { customerRepo, orderRepo, productRepo, mailService, pubsub }
 }

@@ -8,12 +8,11 @@ const mailService = new MailService()
 export const orderCreatedHandler = async (
   event: DomainEvent<OrderCreatedPayload>
 ) => {
-  console.log(
-    'order.created.event inside server',
-    JSON.stringify(event.payload, null, 2)
-  )
+  console.log(`[x] order.created.event received: ${event.payload.orderId}`)
 
-  mailService.send({
+  console.log(JSON.stringify(event.payload, null, 2))
+
+  await mailService.send({
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
         <h1 style="color: #4CAF50;">✅ Order Confirmed</h1>

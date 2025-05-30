@@ -1,12 +1,12 @@
+import { orderCreatedHandler } from '@/application/handlers/order-handlers/order-created-handler'
 import { Customer } from '@/domain/entities/customer'
 import { Product } from '@/domain/entities/product'
-import { OrderCreatedWorker } from '@/infra/workers/order-created.worker'
 import { toCents } from '@/shared/utils/to-cents'
 import {
   IDependencies,
   makeDependencies
 } from '@/tests/helpers/make-dependencies'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CreateOrder } from './create-order'
 
 describe('CreateOrder Use Case', () => {
@@ -14,10 +14,11 @@ describe('CreateOrder Use Case', () => {
   let customer: Customer
   let product: Product
   let dependencies: IDependencies
+  let spy: any
 
   beforeEach(() => {
-    OrderCreatedWorker()
     dependencies = makeDependencies()
+    spy = vi.spyOn(dependencies.pubsub, 'publish')
     customer = Customer.create({
       username: 'test',
       email: 'm5oCt@example.com',
@@ -35,13 +36,18 @@ describe('CreateOrder Use Case', () => {
       dependencies.customerRepo,
       dependencies.productRepo,
       dependencies.orderRepo,
-      dependencies.eventBus
+      dependencies.pubsub
     )
   })
 
   it('should create an valid order', async () => {
     await dependencies.customerRepo.save(customer)
     await dependencies.productRepo.save(product)
+
+    await dependencies.pubsub.subscribe(
+      'order.created.event',
+      orderCreatedHandler
+    )
 
     const order = await useCase.execute({
       customerId: customer.id,
@@ -53,6 +59,7 @@ describe('CreateOrder Use Case', () => {
       ]
     })
 
+    expect(spy).toHaveBeenCalled()
     expect(order).toBeTruthy()
   })
 

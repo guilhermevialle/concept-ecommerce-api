@@ -9,8 +9,8 @@ export class MailService implements IMailService {
       host: 'smtp.ethereal.email',
       port: 587,
       auth: {
-        user: 'urban75@ethereal.email',
-        pass: 'kYaMkmvN4Yn5ujqkKj'
+        user: 'stephany.mclaughlin@ethereal.email',
+        pass: '2KrQPqJAG3AQwBgKTP'
       }
     })
   }

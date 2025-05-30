@@ -7,7 +7,7 @@ import { Order, orderPropsSchema } from '@/domain/aggregates/order'
 import { OrderItem } from '@/domain/entities/order-item'
 import { OrderCreatedEvent } from '@/domain/events/order-events/order-created'
 import { IDService } from '@/domain/services/id.service'
-import { IEventBus } from '@/interfaces/infra/events/pub-sub'
+import { IPubSub } from '@/interfaces/infra/events/pub-sub'
 import { ICustomerRepository } from '@/interfaces/repositories/customer'
 import { IOrderRepository } from '@/interfaces/repositories/order'
 import { IProductRepository } from '@/interfaces/repositories/product'
@@ -30,7 +30,7 @@ export class CreateOrder {
     private readonly customerRepo: ICustomerRepository,
     private readonly productRepo: IProductRepository,
     private readonly orderRepo: IOrderRepository,
-    private readonly eventBus: IEventBus
+    private readonly pubsub: IPubSub
   ) {}
 
   async execute({
@@ -90,6 +90,8 @@ export class CreateOrder {
         totalInCents: order.totalAmountInCents
       }
     })
+
+    await this.pubsub.publish(event)
 
     return order
   }
