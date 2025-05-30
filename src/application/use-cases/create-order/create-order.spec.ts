@@ -1,5 +1,6 @@
 import { Customer } from '@/domain/entities/customer'
 import { Product } from '@/domain/entities/product'
+import { OrderCreatedWorker } from '@/infra/workers/order-created.worker'
 import { toCents } from '@/shared/utils/to-cents'
 import {
   IDependencies,
@@ -15,6 +16,7 @@ describe('CreateOrder Use Case', () => {
   let dependencies: IDependencies
 
   beforeEach(() => {
+    OrderCreatedWorker()
     dependencies = makeDependencies()
     customer = Customer.create({
       username: 'test',
@@ -33,7 +35,7 @@ describe('CreateOrder Use Case', () => {
       dependencies.customerRepo,
       dependencies.productRepo,
       dependencies.orderRepo,
-      dependencies.mailService
+      dependencies.eventBus
     )
   })
 

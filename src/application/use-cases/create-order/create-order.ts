@@ -5,7 +5,9 @@ import {
 } from '@/application/errors/product-errors'
 import { Order, orderPropsSchema } from '@/domain/aggregates/order'
 import { OrderItem } from '@/domain/entities/order-item'
+import { OrderCreatedEvent } from '@/domain/events/order-events/order-created'
 import { IDService } from '@/domain/services/id.service'
+import { IEventBus } from '@/interfaces/infra/events/pub-sub'
 import { ICustomerRepository } from '@/interfaces/repositories/customer'
 import { IOrderRepository } from '@/interfaces/repositories/order'
 import { IProductRepository } from '@/interfaces/repositories/product'
@@ -27,7 +29,8 @@ export class CreateOrder {
   constructor(
     private readonly customerRepo: ICustomerRepository,
     private readonly productRepo: IProductRepository,
-    private readonly orderRepo: IOrderRepository
+    private readonly orderRepo: IOrderRepository,
+    private readonly eventBus: IEventBus
   ) {}
 
   async execute({
@@ -72,6 +75,21 @@ export class CreateOrder {
     })
 
     await this.orderRepo.save(order)
+
+    const event = new OrderCreatedEvent({
+      aggregateId: order.id,
+      payload: {
+        orderId: order.id,
+        customerId: customer.id,
+        customerEmail: customer.email,
+        items: order.items.map((item) => ({
+          title: item.snapshotTitle,
+          quantity: item.quantity,
+          unitPriceInCents: item.unitPriceInCents
+        })),
+        totalInCents: order.totalAmountInCents
+      }
+    })
 
     return order
   }
