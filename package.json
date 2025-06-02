@@ -1,6 +1,6 @@
 {
   "name": "concept-ecommerce-api",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "main": "index.js",
   "scripts": {
     "dev": "tsnd --respawn --quiet --clear --transpile-only --require tsconfig-paths/register src/server.ts",
