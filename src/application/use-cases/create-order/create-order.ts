@@ -5,12 +5,12 @@ import {
 } from '@/application/errors/product-errors'
 import { Order, orderPropsSchema } from '@/domain/aggregates/order'
 import { OrderItem } from '@/domain/entities/order-item'
-import { OrderCreatedEvent } from '@/domain/events/order-events/order-created'
+import { OrderCreatedEvent } from '@/domain/events/order/order-created.event'
 import { IDService } from '@/domain/services/id.service'
-import { IPubSub } from '@/interfaces/infra/events/pub-sub'
-import { ICustomerRepository } from '@/interfaces/repositories/customer'
-import { IOrderRepository } from '@/interfaces/repositories/order'
-import { IProductRepository } from '@/interfaces/repositories/product'
+import { IPubSub } from '@/interfaces/infra/events/pub-sub.interface'
+import { ICustomerRepository } from '@/interfaces/repositories/customer.interface'
+import { IOrderRepository } from '@/interfaces/repositories/order.interface'
+import { IProductRepository } from '@/interfaces/repositories/product.interface'
 import { z } from 'zod'
 
 interface CreateOrderRequest {
@@ -76,22 +76,29 @@ export class CreateOrder {
 
     await this.orderRepo.save(order)
 
-    const event = new OrderCreatedEvent({
+    const orderCreatedEvent = new OrderCreatedEvent({
       aggregateId: order.id,
+      occurredOn: new Date(),
       payload: {
-        orderId: order.id,
-        customerId: customer.id,
-        customerEmail: customer.email,
-        items: order.items.map((item) => ({
-          title: item.snapshotTitle,
-          quantity: item.quantity,
-          unitPriceInCents: item.unitPriceInCents
-        })),
-        totalInCents: order.totalAmountInCents
+        order: {
+          id: order.id,
+          items: order.items.map((item) => ({
+            id: item.id,
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPriceInCents: item.unitPriceInCents
+          })),
+          totalAmountInCents: order.totalAmountInCents
+        },
+        customer: {
+          id: customer.id,
+          username: customer.username,
+          email: customer.email
+        }
       }
     })
 
-    await this.pubsub.publish(event)
+    await this.pubsub.publish(orderCreatedEvent)
 
     return order
   }

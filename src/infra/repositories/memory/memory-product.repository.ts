@@ -1,5 +1,5 @@
 import { Product } from '@/domain/entities/product'
-import { IProductRepository } from '@/interfaces/repositories/product'
+import { IProductRepository } from '@/interfaces/repositories/product.interface'
 
 export class MemoryProductRepository implements IProductRepository {
   private storage: Product[] = []

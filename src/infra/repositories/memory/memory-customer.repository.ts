@@ -1,5 +1,5 @@
 import { Customer } from '@/domain/entities/customer'
-import { ICustomerRepository } from '@/interfaces/repositories/customer'
+import { ICustomerRepository } from '@/interfaces/repositories/customer.interface'
 
 export class MemoryCustomerRepository implements ICustomerRepository {
   private storage: Customer[] = []

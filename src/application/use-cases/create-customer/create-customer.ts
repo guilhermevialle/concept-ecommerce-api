@@ -1,6 +1,6 @@
 import { CustomerAlreadyExistsError } from '@/application/errors/customer-errors'
 import { Customer } from '@/domain/entities/customer'
-import { ICustomerRepository } from '@/interfaces/repositories/customer'
+import { ICustomerRepository } from '@/interfaces/repositories/customer.interface'
 
 type CreateCustomerRequest = {
   username: string

@@ -1,4 +1,3 @@
-import { orderCreatedHandler } from '@/application/handlers/order-handlers/order-created-handler'
 import { Customer } from '@/domain/entities/customer'
 import { Product } from '@/domain/entities/product'
 import { toCents } from '@/shared/utils/to-cents'
@@ -43,11 +42,6 @@ describe('CreateOrder Use Case', () => {
   it('should create an valid order', async () => {
     await dependencies.customerRepo.save(customer)
     await dependencies.productRepo.save(product)
-
-    await dependencies.pubsub.subscribe(
-      'order.created.event',
-      orderCreatedHandler
-    )
 
     const order = await useCase.execute({
       customerId: customer.id,

@@ -1,20 +1,21 @@
-import { DomainEvent } from '@/domain/events/domain-event'
-import { IPubSub } from '@/interfaces/infra/events/pub-sub'
-import { EventHandler } from '@/types/event-handler'
-import amqplib from 'amqplib'
+import { DomainEvent, DomainEventProps } from '@/domain/events/domain.event'
+import { IPubSub } from '@/interfaces/infra/events/pub-sub.interface'
+import * as amqplib from 'amqplib'
 
-const RABBITMQ_URL =
-  process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672'
-
-export class RabbitMQPubSub implements IPubSub {
+interface RabbitMQPubSubProps {
   url: string
   exchange: string
-  connection?: amqplib.ChannelModel
-  channel?: amqplib.Channel
+}
 
-  constructor() {
-    this.url = RABBITMQ_URL
-    this.exchange = 'domain-events'
+export class RabbitMQPubSub implements IPubSub {
+  private connection?: amqplib.ChannelModel
+  private channel?: amqplib.Channel
+  private exchange: string
+  private url: string
+
+  constructor({ exchange, url }: RabbitMQPubSubProps) {
+    this.exchange = exchange
+    this.url = url
   }
 
   async connect() {
@@ -28,19 +29,13 @@ export class RabbitMQPubSub implements IPubSub {
     })
   }
 
-  async publish<Payload>(event: DomainEvent<Payload>) {
+  async publish<PayloadType>(event: DomainEvent<PayloadType>) {
     await this.connect()
+
     const routingKey = event.type()
+    const buffer = Buffer.from(JSON.stringify(event.toJSON()))
 
-    const eventBuffer = Buffer.from(
-      JSON.stringify({
-        aggregateId: event.aggregateId,
-        occurredOn: event.occurredOn.toISOString(),
-        payload: event.payload
-      })
-    )
-
-    this.channel?.publish(this.exchange, routingKey, eventBuffer, {
+    this.channel?.publish(this.exchange, routingKey, buffer, {
       contentType: 'application/json',
       persistent: true
     })
@@ -48,37 +43,58 @@ export class RabbitMQPubSub implements IPubSub {
     console.log(`[x] Published event: "${routingKey}"`)
   }
 
-  async subscribe<T>(
-    eventName: string,
-    handler: EventHandler<T>,
+  async subscribe<PayloadType>(
+    eventType: string,
+    handler: (event: DomainEventProps<PayloadType>) => Promise<void>,
     { service = 'default' } = {}
   ) {
     await this.connect()
 
-    const queue = `${eventName.replace(/\./g, '-')}-queue.${service}`
+    const queueId = `${eventType.replace(/\./g, '-')}-queue.${service}`
 
-    await this.channel?.assertQueue(queue, { durable: true })
-    await this.channel?.bindQueue(queue, this.exchange, eventName)
+    await this.channel?.assertQueue(queueId, { durable: true })
+    await this.channel?.bindQueue(queueId, this.exchange, eventType)
 
-    this.channel?.consume(queue, async (msg) => {
-      if (!msg) return
+    this.channel?.consume(
+      queueId,
+      async (msg) => {
+        if (!msg) return
 
-      const content = JSON.parse(msg.content.toString())
+        try {
+          const content = JSON.parse(msg.content.toString()) as {
+            aggregateId: string
+            occurredOn: string
+            payload: PayloadType
+          }
 
-      try {
-        await handler(content)
-        this.channel?.ack(msg)
-      } catch (err) {
-        console.error(`❌ Error handling event "${eventName}"`, err)
-        this.channel!.nack(msg, false, false)
-      }
-    })
+          await handler({
+            ...content,
+            occurredOn: new Date(content.occurredOn)
+          })
 
-    console.log(`[✓] Subscribed to "${eventName}" with queue "${queue}"`)
+          this.channel!.ack(msg)
+        } catch (err) {
+          console.error(`❌ Error handling event "${eventType}"`, err)
+
+          this.channel!.nack(msg, false, false)
+        }
+      },
+      { noAck: false }
+    )
+
+    console.log(`[✓] Subscribed to "${eventType}" with queue "${queueId}"`)
   }
 
-  async close() {
-    await this.channel?.close()
+  async close(): Promise<void> {
     await this.connection?.close()
+    await this.channel?.close()
+
+    this.connection = undefined
+    this.channel = undefined
   }
 }
+
+export const rmqPubSub = new RabbitMQPubSub({
+  exchange: 'domain-events',
+  url: 'amqp://guest:guest@localhost:5672'
+})

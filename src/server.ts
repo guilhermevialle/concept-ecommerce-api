@@ -1,41 +1,40 @@
-import { orderCreatedHandler } from './application/handlers/order-handlers/order-created-handler'
-import {
-  OrderCreatedEvent,
-  OrderCreatedPayload
-} from './domain/events/order-events/order-created'
-import { RabbitMQPubSub } from './infra/events/rabbitmq/rabbitmq-pub-sub'
-import { toCents } from './shared/utils/to-cents'
-
-const event = new OrderCreatedEvent({
-  aggregateId: '1',
-  payload: {
-    customerEmail: 'r5oP5@example.com',
-    orderId: '1',
-    customerId: '1',
-    items: [
-      {
-        title: 'iPhone X',
-        quantity: 1,
-        unitPriceInCents: toCents(299.9)
-      },
-      {
-        title: 'Samsung S10',
-        quantity: 1,
-        unitPriceInCents: toCents(499.9)
-      }
-    ],
-    totalInCents: toCents(299.9 + 499.9)
-  }
-})
+import { OrderCreatedEvent } from './domain/events/order/order-created.event'
+import { rmqPubSub } from './infra/events/rabbitmq/rabbitmq-pub-sub'
+import './infra/workers/order/order-workers.bootstrap'
 
 ;(async () => {
   try {
-    const eventBus = new RabbitMQPubSub()
+    const event = new OrderCreatedEvent({
+      aggregateId: '1',
+      occurredOn: new Date(),
+      payload: {
+        customer: {
+          id: '1',
+          username: 'John Doe',
+          email: 'r5oP5@example.com'
+        },
+        order: {
+          id: '1',
+          items: [
+            {
+              id: '1',
+              productId: '1',
+              quantity: 1,
+              unitPriceInCents: 100
+            }
+          ],
+          totalAmountInCents: 100
+        }
+      }
+    })
 
-    setInterval(async () => {
-      await eventBus.publish<OrderCreatedPayload>(event)
-    }, 10_000)
+    console.log(event)
 
-    await eventBus.subscribe('order.created.event', orderCreatedHandler)
-  } catch (error) {}
+    await rmqPubSub.publish(event)
+  } catch (error: any) {
+    console.log({
+      name: error.name,
+      message: error.message
+    })
+  }
 })()

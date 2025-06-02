@@ -1,4 +1,4 @@
-import { IMailService, MailPayload } from '@/interfaces/services/mail'
+import { IMailService, MailPayload } from '@/interfaces/services/mail.interface'
 import nodemailer, { Transporter } from 'nodemailer'
 
 export class MailService implements IMailService {

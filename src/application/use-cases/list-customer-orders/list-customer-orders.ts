@@ -1,7 +1,7 @@
 import { CustomerNotFoundError } from '@/application/errors/customer-errors'
 import { Order } from '@/domain/aggregates/order'
-import { ICustomerRepository } from '@/interfaces/repositories/customer'
-import { IOrderRepository } from '@/interfaces/repositories/order'
+import { ICustomerRepository } from '@/interfaces/repositories/customer.interface'
+import { IOrderRepository } from '@/interfaces/repositories/order.interface'
 
 interface ListCustomerOrdersRequest {
   customerId: string
